@@ -45,8 +45,8 @@ export class User extends BaseEntity {
 	@UpdateDateColumn()
 	updated_at: Date;
 
-	// @OneToMany(() => Post, post => post.user_id)
-	// posts: Post[];
+	@OneToMany(() => Post, post => post.user)
+	posts: Post[];
 
 	@BeforeInsert()
 	@BeforeUpdate()
