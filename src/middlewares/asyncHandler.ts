@@ -4,5 +4,3 @@ export const asyncHandler = (fn: any) =>
 		const next = args[args.length - 1];
 		return Promise.resolve(fnReturn).catch(next);
 	};
-
-// module.exports = asyncUtil;
