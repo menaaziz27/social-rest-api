@@ -11,6 +11,7 @@ import {
 	OneToMany,
 	DeleteDateColumn,
 } from 'typeorm';
+import { Comment } from './Comment.entity';
 import { Post } from './Post.entity';
 const bcrypt = require('bcryptjs');
 
@@ -47,6 +48,9 @@ export class User extends BaseEntity {
 
 	@OneToMany(() => Post, post => post.user)
 	posts: Post[];
+
+	@OneToMany(() => Comment, comment => comment.user)
+	comments: Comment[];
 
 	@BeforeInsert()
 	@BeforeUpdate()
