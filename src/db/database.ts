@@ -12,7 +12,7 @@ export const connectToDb = async () => {
 			port: 5432,
 			username: 'postgres',
 			password: 'admin',
-			database: 'myproject',
+			database: 'final',
 			entities: [User, Post, Like, Comment],
 			synchronize: true,
 		});

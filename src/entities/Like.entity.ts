@@ -15,16 +15,24 @@ import {
 import { Post } from './Post.entity';
 import { User } from './User.entity';
 
+export interface LikeDTO {
+	user: User;
+	post: Post;
+}
+
 @Entity()
 export class Like extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	@ManyToOne(() => User, user => user.posts)
+	@Column({ default: false })
+	is_like: Boolean;
+
+	@ManyToOne(() => User, user => user.likes, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
-	@ManyToOne(() => Post, post => post.user)
+	@ManyToOne(() => Post, post => post.user, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'post_id' })
 	post: Post;
 

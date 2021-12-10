@@ -12,6 +12,7 @@ import {
 	DeleteDateColumn,
 } from 'typeorm';
 import { Comment } from './Comment.entity';
+import { Like } from './Like.entity';
 import { Post } from './Post.entity';
 const bcrypt = require('bcryptjs');
 
@@ -46,11 +47,14 @@ export class User extends BaseEntity {
 	@UpdateDateColumn()
 	updated_at: Date;
 
-	@OneToMany(() => Post, post => post.user)
+	@OneToMany(() => Post, post => post.user, { cascade: true })
 	posts: Post[];
 
-	@OneToMany(() => Comment, comment => comment.user)
+	@OneToMany(() => Comment, comment => comment.user, { cascade: true })
 	comments: Comment[];
+
+	@OneToMany(() => Like, like => like.user, { cascade: true })
+	likes: Like[];
 
 	@BeforeInsert()
 	@BeforeUpdate()
