@@ -5,6 +5,6 @@ const express = require('express');
 const router = express.Router();
 
 router.route('/').get(getUsers).post(createUsers);
-router.route('/:id').delete(isAuth(), deleteUser).get(isAuth(), getDeletedUser);
+router.route('/:userId').delete(isAuth(), deleteUser).get(isAuth(), getDeletedUser);
 
 module.exports = router;

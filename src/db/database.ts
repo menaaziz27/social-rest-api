@@ -1,4 +1,5 @@
 import { createConnection } from 'typeorm';
+import { Comment } from '../entities/Comment.entity';
 import { Like } from '../entities/Like.entity';
 import { Post } from '../entities/Post.entity';
 import { User } from '../entities/User.entity';
@@ -12,7 +13,7 @@ export const connectToDb = async () => {
 			username: 'postgres',
 			password: 'admin',
 			database: 'myproject',
-			entities: [User, Post, Like],
+			entities: [User, Post, Like, Comment],
 			synchronize: true,
 		});
 	} catch (e) {

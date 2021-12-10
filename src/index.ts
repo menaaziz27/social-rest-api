@@ -18,10 +18,12 @@ connectToDb().then(client => {
 
 	app.use(express.json());
 	app.use(cookieParser(process.env.COOKIE_SECRET));
+
 	app.use('/api/auth', authRoutes);
 	app.use('/api/posts', postRoutes);
 	app.use('/api/users', userRoutes);
-	app.use('/api/posts/:id/comments', commentRoutes);
+	app.use('/api/posts/:postId/comments', commentRoutes);
+
 	app.use(notFound);
 	app.use(errorHandler);
 

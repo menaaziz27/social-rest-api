@@ -6,7 +6,15 @@ import { asyncHandler } from '../middlewares/asyncHandler';
 // import { PostService } from '../services/Post.service';
 
 export const getPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-	let posts = await getRepository(Post).find({ relations: ['user'], loadEagerRelations: true });
+	const take = Number(req?.query?.take) || 10;
+	const page = Number(req?.query?.page) || 0;
+	const skip = (page - 1) * take;
+
+	let posts = await getRepository(Post).findAndCount({
+		relations: ['user', 'comments'],
+		take,
+		skip,
+	});
 	// @ts-ignore
 	console.log(req.user);
 
@@ -32,9 +40,9 @@ export const createPost = asyncHandler(async (req: Request, res: Response, next:
 
 export const editPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	// const { title, content } = req.body;
-	const { id } = req.params;
+	const { postId } = req.params;
 	let post = await getRepository(Post).findOne({
-		where: { id },
+		where: { id: postId },
 	});
 
 	if (!post) {
@@ -51,8 +59,17 @@ export const editPost = asyncHandler(async (req: Request, res: Response, next: N
 });
 
 export const deletePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-	const { id } = req.params;
-	let post = await getRepository(Post).delete(id);
+	const { postId } = req.params;
+	// check if the currentUser has this post
+	let post = await getRepository(Post).findOne({ id: +postId }, { relations: ['user'] });
 
-	res.json(post);
+	// @ts-ignore
+	if (req.user.id !== post?.user.id) {
+		res.status(400);
+		throw new Error('You can only delete your posts');
+	}
+
+	await getRepository(Post).delete(+postId);
+
+	res.json({ message: 'Post is deleted successfully.' });
 });
