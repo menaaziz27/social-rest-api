@@ -4,12 +4,8 @@ import isAuth from '../middlewares/isAuth';
 const express = require('express');
 const router = express.Router();
 
-router.post('/', isAuth(), createPost);
+router.route('/').get(isAuth(), getPosts).post(isAuth(), createPost);
 
-router.get('/', isAuth(), getPosts);
-
-router.put('/:id', isAuth(), editPost);
-
-router.delete('/:id', isAuth(), deletePost);
+router.route('/:postId').put(isAuth(), editPost).post(isAuth(), deletePost);
 
 module.exports = router;

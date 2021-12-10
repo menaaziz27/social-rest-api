@@ -18,9 +18,9 @@ export class Comment extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	// @ManyToOne(() => Post, post => post.comments)
-	// @JoinColumn({ name: 'post_id' })
-	// post: Post;
+	@ManyToOne(() => Post, post => post.comments)
+	@JoinColumn({ name: 'post_id' })
+	post: Post;
 
 	@Column()
 	text: string;

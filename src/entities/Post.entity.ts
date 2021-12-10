@@ -30,8 +30,8 @@ export class Post extends BaseEntity {
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
-	// @OneToMany(() => Comment, comment => comment.post)
-	// comments: Comment[];
+	@OneToMany(() => Comment, comment => comment.post)
+	comments: Comment[];
 
 	@CreateDateColumn()
 	created_at: Date;
