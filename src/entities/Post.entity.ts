@@ -9,7 +9,9 @@ import {
 	UpdateDateColumn,
 	ManyToOne,
 	JoinColumn,
+	OneToMany,
 } from 'typeorm';
+import { Comment } from './Comment.entity';
 import { User } from './User.entity';
 // import { ForeignKeyMetadata } from 'typeorm/metadata/ForeignKeyMetadata';
 
@@ -27,6 +29,9 @@ export class Post extends BaseEntity {
 	@ManyToOne(() => User, user => user.posts)
 	@JoinColumn({ name: 'user_id' })
 	user: User;
+
+	// @OneToMany(() => Comment, comment => comment.post)
+	// comments: Comment[];
 
 	@CreateDateColumn()
 	created_at: Date;

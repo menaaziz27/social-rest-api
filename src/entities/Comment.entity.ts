@@ -8,18 +8,19 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	TableForeignKey,
+	JoinColumn,
+	ManyToOne,
 } from 'typeorm';
+import { Post } from './Post.entity';
 
 @Entity()
 export class Comment extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
-	// @Column()
-	// user_id: TableForeignKey;
-
-	// @Column()
-	// post_id: TableForeignKey;
+	// @ManyToOne(() => Post, post => post.comments)
+	// @JoinColumn({ name: 'post_id' })
+	// post: Post;
 
 	@Column()
 	text: string;

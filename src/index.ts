@@ -8,6 +8,7 @@ dotenv.config();
 const postRoutes = require('./routes/post.ts');
 const commentRoutes = require('./routes/comment');
 const userRoutes = require('./routes/user');
+const authRoutes = require('./routes/auth');
 
 connectToDb().then(client => {
 	console.log(`connected to db ${client.options.database}`);
@@ -15,6 +16,7 @@ connectToDb().then(client => {
 	const app = express();
 
 	app.use(express.json());
+	app.use(authRoutes);
 	app.use(postRoutes);
 	app.use(userRoutes);
 	app.use(commentRoutes);

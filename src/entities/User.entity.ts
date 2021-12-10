@@ -11,6 +11,7 @@ import {
 	OneToMany,
 } from 'typeorm';
 import { Post } from './Post.entity';
+const bcrypt = require('bcryptjs');
 
 @Entity()
 export class User extends BaseEntity {
@@ -52,6 +53,9 @@ export class User extends BaseEntity {
 	@BeforeUpdate()
 	async hashPassword(): Promise<void> {
 		// cheack if that password changing or not
+		if (this.password) {
+			this.password = bcrypt.hashSync(this.password, 10);
+		}
 		// if (this.password) {
 		//   if (this.tempPassword !== this.password) {
 		//     try {

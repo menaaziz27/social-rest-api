@@ -8,25 +8,29 @@ import {
 	CreateDateColumn,
 	UpdateDateColumn,
 	TableForeignKey,
+	ManyToOne,
+	JoinColumn,
+	OneToOne,
 } from 'typeorm';
+import { Post } from './Post.entity';
+import { User } from './User.entity';
 
 @Entity()
 export class Like extends BaseEntity {
 	@PrimaryGeneratedColumn()
 	id: number;
 
+	@ManyToOne(() => User, user => user.posts)
+	@JoinColumn({ name: 'user_id' })
+	user: User;
+
+	@ManyToOne(() => Post, post => post.user)
+	@JoinColumn({ name: 'post_id' })
+	post: Post;
+
 	@CreateDateColumn()
 	created_at: Date;
 
 	@UpdateDateColumn()
 	updated_at: Date;
-
-	// @Column()
-	// user_id: TableForeignKey;
-
-	// // @Column()
-	// // post_id: TableForeignKey;
-
-	// @Column()
-	// text: string;
 }
