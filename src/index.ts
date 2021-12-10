@@ -2,6 +2,7 @@ import express from 'express';
 import * as dotenv from 'dotenv';
 import { connectToDb } from './db/database';
 import { errorHandler, notFound } from './middlewares/errorMiddlewares';
+const cookieParser = require('cookie-parser');
 
 dotenv.config();
 
@@ -16,10 +17,11 @@ connectToDb().then(client => {
 	const app = express();
 
 	app.use(express.json());
-	app.use(authRoutes);
-	app.use(postRoutes);
-	app.use(userRoutes);
-	app.use(commentRoutes);
+	app.use(cookieParser(process.env.COOKIE_SECRET));
+	app.use('/api/auth', authRoutes);
+	app.use('/api/posts', postRoutes);
+	app.use('/api/users', userRoutes);
+	app.use('/api/posts/:id/comments', commentRoutes);
 	app.use(notFound);
 	app.use(errorHandler);
 

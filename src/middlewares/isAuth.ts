@@ -1,29 +1,35 @@
-import { Request, Response } from 'express';
-import express from 'express';
-import { User } from '../entities/User.entity.js';
-import { asyncHandler } from './asyncHandler.js';
+import { NextFunction, Request, Response } from 'express';
 const jwt = require('jsonwebtoken');
 
-interface IUserRequest extends express.Request {
-	user: any;
+interface MiddlewareOptions {
+	ignoreExpiredTokens: boolean;
 }
 
-export const protect = asyncHandler(async (req: IUserRequest, res: Response, next: any) => {
-	if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-		try {
-			const token = req.headers.authorization.split(' ')[1];
-			const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+const defaultOptions: MiddlewareOptions = {
+	ignoreExpiredTokens: false,
+};
 
-			let user = await User.findByIds(decoded.id);
-			req.user = user;
-
-			next();
-		} catch (e) {
+export default function isAuth(options?: MiddlewareOptions) {
+	const { ignoreExpiredTokens } = options ?? defaultOptions;
+	return function (req: Request, res: Response, next: NextFunction) {
+		const header = req.header('authorization');
+		const token = header?.split('Bearer ')[1] ?? null;
+		if (token === null) {
 			res.status(401);
-			throw new Error('Not authorized, invald token');
+			throw new Error('Unauthorized');
 		}
-	} else {
-		res.status(401);
-		throw new Error('Not authorized');
-	}
-});
+		jwt.verify(
+			token,
+			process.env.AUTH_TOKEN_SECRET as string,
+			{ ignoreExpiration: ignoreExpiredTokens },
+			(err: Error, user: object) => {
+				if (err) {
+					return res.status(401).json({ success: false, message: 'Token expired or invalid' });
+				}
+				//@ts-ignore
+				req.user = user;
+				return next();
+			}
+		);
+	};
+}

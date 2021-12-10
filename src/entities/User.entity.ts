@@ -9,6 +9,7 @@ import {
 	UpdateDateColumn,
 	BeforeUpdate,
 	OneToMany,
+	DeleteDateColumn,
 } from 'typeorm';
 import { Post } from './Post.entity';
 const bcrypt = require('bcryptjs');
@@ -35,10 +36,8 @@ export class User extends BaseEntity {
 	})
 	birth_date: Date;
 
-	@Column({
-		default: false,
-	})
-	is_deleted: Boolean;
+	@DeleteDateColumn()
+	deleted_at: Date;
 
 	@CreateDateColumn()
 	created_at: Date;
