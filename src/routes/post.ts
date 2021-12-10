@@ -1,11 +1,12 @@
-import { getPosts, createPost, editPost, deletePost } from '../controllers/postController';
+import { getPosts, createPost, editPost, deletePost, getMyPosts } from '../controllers/postController';
 import isAuth from '../middlewares/isAuth';
 
 const express = require('express');
 const router = express.Router();
 
+router.route('/me').get(isAuth(), getMyPosts);
 router.route('/').get(isAuth(), getPosts).post(isAuth(), createPost);
 
-router.route('/:postId').put(isAuth(), editPost).post(isAuth(), deletePost);
+router.route('/:postId').put(isAuth(), editPost).delete(isAuth(), deletePost);
 
 module.exports = router;

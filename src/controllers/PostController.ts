@@ -5,25 +5,35 @@ import { User } from '../entities/User.entity';
 import { asyncHandler } from '../middlewares/asyncHandler';
 // import { PostService } from '../services/Post.service';
 
+export const getMyPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+	console.log('here');
+	let [posts, count] = await getRepository(Post)
+		// @ts-ignore
+		.findAndCount({ where: { user: req.user.id }, relations: ['comments'] });
+
+	res.json(posts);
+});
+
 export const getPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const take = Number(req?.query?.take) || 10;
-	const page = Number(req?.query?.page) || 0;
-	const skip = (page - 1) * take;
+	const page = Number(req?.query?.page) || 1;
+	const skip = page === 1 ? 0 : (page - 1) * take;
 
-	let posts = await getRepository(Post).findAndCount({
+	console.log({ skip });
+	console.log({ take });
+
+	let [posts, count] = await getRepository(Post).findAndCount({
 		relations: ['user', 'comments'],
 		take,
 		skip,
 	});
-	// @ts-ignore
-	console.log(req.user);
 
 	res.json(posts);
 });
 
 export const createPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	// @ts-ignore
-	let user = await getRepository(User).findByIds(req.user.id);
+	// let user = await getRepository(User).findByIds(req.user.id);
 	// @ts-ignore
 	console.log(req.user.id);
 	const { title, content } = req.body;
@@ -63,8 +73,11 @@ export const deletePost = asyncHandler(async (req: Request, res: Response, next:
 	// check if the currentUser has this post
 	let post = await getRepository(Post).findOne({ id: +postId }, { relations: ['user'] });
 
+	console.log({ post });
 	// @ts-ignore
-	if (req.user.id !== post?.user.id) {
+	console.log(req.user);
+	// @ts-ignore
+	if (req.user.id !== post?.user?.id) {
 		res.status(400);
 		throw new Error('You can only delete your posts');
 	}
