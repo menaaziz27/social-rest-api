@@ -48,6 +48,12 @@ export const createPost = asyncHandler(async (req: Request, res: Response, next:
 
 export const editPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
+
+	if (!req.body.title && !req.body.content) {
+		res.status(400);
+		throw new Error('Post should include title and content properties.');
+	}
+
 	let post = await getRepository(Post).findOne({
 		where: { id: postId },
 		relations: ['user'],
@@ -66,7 +72,8 @@ export const editPost = asyncHandler(async (req: Request, res: Response, next: N
 
 	let updatedPost = await getRepository(Post).save({
 		...post,
-		...req.body,
+		title: req.body.title ? req.body.title : post.title,
+		content: req.body.content ? req.body.content : post.content,
 	});
 
 	res.status(201).json(updatedPost);

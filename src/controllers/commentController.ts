@@ -72,7 +72,7 @@ export const editComment = asyncHandler(async (req: Request, res: Response, next
 	const { commentId } = req.params;
 	const { text } = req.body;
 
-	const comment = await getRepository(Comment).findOne({ where: { id: +commentId }, relations: ['user'] });
+	const comment = await getRepository(Comment).findOne({ where: { id: +commentId }, relations: ['user', 'post'] });
 
 	if (!comment) {
 		res.status(404);
@@ -94,30 +94,25 @@ export const editComment = asyncHandler(async (req: Request, res: Response, next
 });
 
 export const deleteComment = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-	const { postId, commentId } = req.params;
+	const { commentId } = req.params;
 
-	let post = await getRepository(Post).findOne({
-		where: { id: +postId },
-		relations: ['comments', 'comments.user'],
-	});
+	// get comment with user relation
+	// chech if
 
-	const existingComment = post?.comments.find(comment => comment?.id === +commentId);
+	const comment = await getRepository(Comment).findOne({ where: { id: +commentId }, relations: ['user'] });
 
-	if (!existingComment) {
-		res.status(400);
+	if (!comment) {
+		res.status(404);
 		throw new Error('Comment is not found');
 	}
-
 	// @ts-ignore
-	if (existingComment.user.id !== req.user.id) {
+	if (comment?.user.id !== req.user.id) {
+		// if comment is not mine
 		res.status(400);
 		throw new Error('Not Authorized to perform this operation.');
 	}
 
-	// @ts-ignore
-	post.comments = post?.comments?.filter(comment => +commentId !== comment.id);
+	await getRepository(Comment).delete({ id: +commentId });
 
-	await post?.save();
-
-	res.status(200).json(post);
+	res.status(200).json({ msg: 'comment is deleted' });
 });

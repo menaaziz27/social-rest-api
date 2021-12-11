@@ -22,7 +22,7 @@ export default function isAuth(options?: MiddlewareOptions) {
 					ignoreExpiration: ignoreExpiredTokens,
 				});
 
-				let user = await getRepository(User).find({ where: { id: decoded.id }, withDeleted: true });
+				let user = await getRepository(User).findOne({ where: { id: decoded.id }, withDeleted: true });
 				if (!user) {
 					res.status(404);
 					throw new Error('Bad credentials');
