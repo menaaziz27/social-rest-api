@@ -2,8 +2,6 @@ import {
 	Entity,
 	PrimaryGeneratedColumn,
 	Column,
-	BeforeRemove,
-	BeforeInsert,
 	BaseEntity,
 	CreateDateColumn,
 	UpdateDateColumn,
@@ -12,8 +10,8 @@ import {
 	OneToMany,
 } from 'typeorm';
 import { Comment } from './Comment.entity';
+import { Like } from './Like.entity';
 import { User } from './User.entity';
-// import { ForeignKeyMetadata } from 'typeorm/metadata/ForeignKeyMetadata';
 
 @Entity()
 export class Post extends BaseEntity {
@@ -26,12 +24,15 @@ export class Post extends BaseEntity {
 	@Column()
 	content: string;
 
-	@ManyToOne(() => User, user => user.posts)
+	@ManyToOne(() => User, user => user.posts, { onDelete: 'CASCADE' })
 	@JoinColumn({ name: 'user_id' })
 	user: User;
 
-	@OneToMany(() => Comment, comment => comment.post)
+	@OneToMany(() => Comment, comment => comment.post, { cascade: true })
 	comments: Comment[];
+
+	@OneToMany(() => Like, like => like.post, { cascade: true })
+	likes: Like[];
 
 	@CreateDateColumn()
 	created_at: Date;

@@ -7,7 +7,8 @@ const cookieParser = require('cookie-parser');
 dotenv.config();
 
 const postRoutes = require('./routes/post.ts');
-const commentRoutes = require('./routes/comment');
+const postComments = require('./routes/postComments');
+const commentRoutes = require('./routes/comments');
 const userRoutes = require('./routes/user');
 const authRoutes = require('./routes/auth');
 
@@ -22,7 +23,8 @@ connectToDb().then(client => {
 	app.use('/api/auth', authRoutes);
 	app.use('/api/posts', postRoutes);
 	app.use('/api/users', userRoutes);
-	app.use('/api/posts/:postId/comments', commentRoutes);
+	app.use('/api/posts/:postId/comments', postComments);
+	app.use('/api/comments', commentRoutes);
 
 	app.use(notFound);
 	app.use(errorHandler);

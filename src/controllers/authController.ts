@@ -24,7 +24,6 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 	const { email, password } = req.body;
-	// check for email and password if exists
 	if (!email || !password) {
 		res.status(400);
 		throw new Error('Please provide your credentials.');
@@ -32,13 +31,11 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
 	const user = await getRepository(User).findOne({ email });
 
-	//if !exist
 	if (!user) {
 		res.status(401);
 		throw new Error('User not found!');
 	}
 
-	// compare password
 	const isMatched = await bcrypt.compare(password, user.password);
 	if (!isMatched) {
 		res.status(403);
@@ -53,7 +50,6 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const refreshToken = asyncHandler(async (req: Request, res: Response) => {
-	// check the existing of refresh token
 	const refreshTokenFromCookie = req.cookies['refresh-token'];
 	if (!refreshTokenFromCookie || !verifyToken(refreshTokenFromCookie, true)) {
 		return res.status(400).json({ success: false, message: 'Invalid refresh token' });

@@ -1,29 +1,28 @@
 import { NextFunction, Request, Response } from 'express';
 import { getRepository } from 'typeorm';
+import { Like } from '../entities/Like.entity';
 import { Post } from '../entities/Post.entity';
-import { User } from '../entities/User.entity';
 import { asyncHandler } from '../middlewares/asyncHandler';
-// import { PostService } from '../services/Post.service';
 
-export const getPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-	const take = Number(req?.query?.take) || 10;
-	const page = Number(req?.query?.page) || 0;
-	const skip = (page - 1) * take;
-
-	let posts = await getRepository(Post).findAndCount({
-		relations: ['user', 'comments'],
-		take,
-		skip,
-	});
-	// @ts-ignore
-	console.log(req.user);
+export const getMyPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+	let [posts, count] = await getRepository(Post)
+		// @ts-ignore
+		.findAndCount({ where: { user: req.user.id }, relations: ['comments'] });
 
 	res.json(posts);
 });
 
+export const getPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+	const take = Number(req?.query?.take) || 10;
+	const page = Number(req?.query?.page) || 1;
+	const skip = page === 1 ? 0 : (page - 1) * take;
+
+	let posts = await getRepository(Post).find({ relations: ['likes', 'comments', 'user', 'likes.user'], skip, take });
+
+	res.status(200).json(posts);
+});
+
 export const createPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-	// @ts-ignore
-	let user = await getRepository(User).findByIds(req.user.id);
 	// @ts-ignore
 	console.log(req.user.id);
 	const { title, content } = req.body;
@@ -39,7 +38,6 @@ export const createPost = asyncHandler(async (req: Request, res: Response, next:
 });
 
 export const editPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-	// const { title, content } = req.body;
 	const { postId } = req.params;
 	let post = await getRepository(Post).findOne({
 		where: { id: postId },
@@ -60,11 +58,10 @@ export const editPost = asyncHandler(async (req: Request, res: Response, next: N
 
 export const deletePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
-	// check if the currentUser has this post
 	let post = await getRepository(Post).findOne({ id: +postId }, { relations: ['user'] });
 
 	// @ts-ignore
-	if (req.user.id !== post?.user.id) {
+	if (req.user.id !== post?.user?.id) {
 		res.status(400);
 		throw new Error('You can only delete your posts');
 	}
@@ -72,4 +69,74 @@ export const deletePost = asyncHandler(async (req: Request, res: Response, next:
 	await getRepository(Post).delete(+postId);
 
 	res.json({ message: 'Post is deleted successfully.' });
+});
+
+// /api/posts/:postId/like
+export const likePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+	const { postId } = req.params;
+
+	const post = await getRepository(Post).findOne({ where: { id: +postId }, relations: ['likes', 'likes.user'] });
+
+	// @ts-ignore
+	const existedLike = post?.likes.find(like => like.user.id === req.user.id);
+	console.log(existedLike);
+
+	let like;
+
+	if (existedLike) {
+		// update like
+		like = await getRepository(Like).save({
+			...existedLike,
+			is_like: true,
+		});
+
+		return res.status(201).json(like);
+	} else {
+		like = await getRepository(Like).create({
+			// @ts-ignore
+			user: req.user,
+			// @ts-ignore
+			post: post,
+			is_like: true,
+		});
+
+		await like.save();
+
+		return res.status(201).json(like);
+	}
+});
+
+// /api/posts/:postId/unlike
+export const unLikePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+	// @ts-ignore
+	const { postId } = req.params;
+
+	const post = await getRepository(Post).findOne({ where: { id: +postId }, relations: ['likes', 'likes.user'] });
+
+	console.log(post);
+	// check post likes if they have a like user equal to current login user
+	// @ts-ignore
+	const existedLike = post?.likes.find(like => like.user.id === req.user.id);
+
+	let like;
+
+	if (existedLike) {
+		like = await getRepository(Like).save({
+			...existedLike,
+			is_like: false,
+		});
+		return res.status(201).json(like);
+	} else {
+		like = await getRepository(Like).create({
+			// @ts-ignore
+			user: req.user,
+			// @ts-ignore
+			post: post,
+			is_like: false,
+		});
+
+		await like.save();
+
+		return res.status(201).json(like);
+	}
 });
