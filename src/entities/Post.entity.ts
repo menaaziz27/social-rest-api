@@ -2,8 +2,6 @@ import {
 	Entity,
 	PrimaryGeneratedColumn,
 	Column,
-	BeforeRemove,
-	BeforeInsert,
 	BaseEntity,
 	CreateDateColumn,
 	UpdateDateColumn,
@@ -14,7 +12,6 @@ import {
 import { Comment } from './Comment.entity';
 import { Like } from './Like.entity';
 import { User } from './User.entity';
-// import { ForeignKeyMetadata } from 'typeorm/metadata/ForeignKeyMetadata';
 
 @Entity()
 export class Post extends BaseEntity {
@@ -34,7 +31,7 @@ export class Post extends BaseEntity {
 	@OneToMany(() => Comment, comment => comment.post, { cascade: true })
 	comments: Comment[];
 
-	@OneToMany(() => Like, like => like.user, { cascade: true })
+	@OneToMany(() => Like, like => like.post, { cascade: true })
 	likes: Like[];
 
 	@CreateDateColumn()

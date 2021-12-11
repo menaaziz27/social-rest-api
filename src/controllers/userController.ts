@@ -22,7 +22,6 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response, next:
 	const { userId } = req.params;
 	// @ts-ignore
 	console.log(req.user);
-	// soft delete user
 	// @ts-ignore
 	if (req.user.id !== +userId) {
 		res.status(400);
