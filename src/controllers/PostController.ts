@@ -7,9 +7,9 @@ import { asyncHandler } from '../middlewares/asyncHandler';
 export const getMyPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	let [posts, count] = await getRepository(Post)
 		// @ts-ignore
-		.findAndCount({ where: { user: req.user.id }, relations: ['comments'] });
+		.findAndCount({ where: { user: req.user.id }, relations: ['comments', 'likes', 'likes.user', 'comments.user'] });
 
-	res.json(posts);
+	res.status(200).json(posts);
 });
 
 export const getPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -43,13 +43,14 @@ export const createPost = asyncHandler(async (req: Request, res: Response, next:
 	});
 
 	await post.save();
-	res.json(post);
+	res.status(201).json(post);
 });
 
 export const editPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
 	let post = await getRepository(Post).findOne({
 		where: { id: postId },
+		relations: ['user'],
 	});
 
 	if (!post) {
@@ -57,12 +58,18 @@ export const editPost = asyncHandler(async (req: Request, res: Response, next: N
 		throw new Error('Post Not Fount!');
 	}
 
+	// @ts-ignore
+	if (req.user.id !== post?.user?.id) {
+		res.status(400);
+		throw new Error('You can only update your posts');
+	}
+
 	let updatedPost = await getRepository(Post).save({
 		...post,
 		...req.body,
 	});
 
-	res.json(updatedPost);
+	res.status(201).json(updatedPost);
 });
 
 export const deletePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -77,10 +84,9 @@ export const deletePost = asyncHandler(async (req: Request, res: Response, next:
 
 	await getRepository(Post).delete(+postId);
 
-	res.json({ message: 'Post is deleted successfully.' });
+	res.status(200).json({ message: 'Post is deleted successfully.' });
 });
 
-// /api/posts/:postId/like
 export const likePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
 

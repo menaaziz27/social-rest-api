@@ -17,8 +17,16 @@ export const getPostComments = asyncHandler(async (req: Request, res: Response, 
 });
 
 export const getUserComments = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-	// @ts-ignore
-	const comments = await getRepository(Comment).find({ where: { user: req.user.id } });
+	const take = Number(req?.query?.take) || 10;
+	const page = Number(req?.query?.page) || 1;
+	const skip = page === 1 ? 0 : (page - 1) * take;
+	const comments = await getRepository(Comment).find({
+		// @ts-ignore
+		where: { user: req.user.id },
+		relations: ['post', 'user'],
+		skip,
+		take,
+	});
 
 	res.status(200).json(comments);
 });
