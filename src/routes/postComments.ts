@@ -1,4 +1,4 @@
-import { getPostComments, createComment, editComment, deleteComment } from '../controllers/commentController';
+import { getPostComments, createComment } from '../controllers/commentController';
 import isAuth from '../middlewares/isAuth';
 
 const express = require('express');

@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { getRepository } from 'typeorm';
 import { User } from '../entities/User.entity';
 import { asyncHandler } from './asyncHandler';
 const jwt = require('jsonwebtoken');
@@ -21,7 +22,7 @@ export default function isAuth(options?: MiddlewareOptions) {
 					ignoreExpiration: ignoreExpiredTokens,
 				});
 
-				const user = await User.findOne({ id: decoded.id });
+				let user = await getRepository(User).find({ where: { id: decoded.id }, withDeleted: true });
 				if (!user) {
 					res.status(404);
 					throw new Error('Bad credentials');

@@ -11,11 +11,6 @@ import {
 import { Post } from './Post.entity';
 import { User } from './User.entity';
 
-export interface LikeDTO {
-	user: User;
-	post: Post;
-}
-
 @Entity()
 export class Like extends BaseEntity {
 	@PrimaryGeneratedColumn()

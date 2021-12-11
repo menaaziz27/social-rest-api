@@ -41,9 +41,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 		res.status(403);
 		throw new Error('Password is incorrect');
 	}
-	// create the payload
 	const payload = { id: user.id, email: user.email };
-	// generate tokens with the payload
 	const { accessToken, refreshToken } = generateTokens(payload);
 
 	res.status(200).json({ message: 'success', accessToken, refreshToken });

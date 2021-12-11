@@ -1,34 +1,26 @@
-/_eslint-disable no-alert, no-console_/
-=== auth ===
+# Social Restful API
 
-[X] POST /api/auth/login
+Restful api for managing users, posts, comments and likes with authentication system and refresh tokens
 
-[X] POST /api/auth/register
+### Postman Collection
 
-[X] POST /api/auth/refresh
+```
 
-=== posts ===
+https://www.getpostman.com/collections/aa46601557a7e2172878
 
-[X] GET /api/posts
+```
 
-[X] POST /api/posts
+#### Technologoies used
 
-[X] GET /api/posts:postId
+1. TypeScript
+2. ExpressJS
+3. Postgres
+4. Typeorm
 
-[X] PUT /api/posts:postId
+### How to run
 
-[X] DEL /api/posts:postId
-
-[X] GET /api/posts/me
-
-=== comments ===
-
-[X] GET /api/posts/:postId/comments => get post comments
-
-[X] POST /api/posts/:postId/comments => create comment
-
-[X] GET /api/comments => GET USER COMMENTS
-
-[X] PUT /api/comments/:commentId => editComment
-
-[X] DEL /api/comments/:commentId => delete comment
+1. run _npm install_
+2. add your credentials in a file _.env_ in the root directory
+3. connect to your local postgres database
+4. feel free to import postman collection and use it
+5. run _npm start_

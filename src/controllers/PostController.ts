@@ -7,9 +7,9 @@ import { asyncHandler } from '../middlewares/asyncHandler';
 export const getMyPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	let [posts, count] = await getRepository(Post)
 		// @ts-ignore
-		.findAndCount({ where: { user: req.user.id }, relations: ['comments'] });
+		.findAndCount({ where: { user: req.user.id }, relations: ['comments', 'likes', 'likes.user', 'comments.user'] });
 
-	res.json(posts);
+	res.status(200).json(posts);
 });
 
 export const getPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -22,9 +22,18 @@ export const getPosts = asyncHandler(async (req: Request, res: Response, next: N
 	res.status(200).json(posts);
 });
 
+export const getPostById = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+	const { postId } = req.params;
+
+	let post = await getRepository(Post).findOne({
+		where: { id: postId },
+		relations: ['comments', 'comments.user', 'likes', 'likes.user'],
+	});
+
+	res.status(200).json(post);
+});
+
 export const createPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-	// @ts-ignore
-	console.log(req.user.id);
 	const { title, content } = req.body;
 	let post = getRepository(Post).create({
 		// @ts-ignore
@@ -34,13 +43,14 @@ export const createPost = asyncHandler(async (req: Request, res: Response, next:
 	});
 
 	await post.save();
-	res.json(post);
+	res.status(201).json(post);
 });
 
 export const editPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
 	let post = await getRepository(Post).findOne({
 		where: { id: postId },
+		relations: ['user'],
 	});
 
 	if (!post) {
@@ -48,12 +58,18 @@ export const editPost = asyncHandler(async (req: Request, res: Response, next: N
 		throw new Error('Post Not Fount!');
 	}
 
+	// @ts-ignore
+	if (req.user.id !== post?.user?.id) {
+		res.status(400);
+		throw new Error('You can only update your posts');
+	}
+
 	let updatedPost = await getRepository(Post).save({
 		...post,
 		...req.body,
 	});
 
-	res.json(updatedPost);
+	res.status(201).json(updatedPost);
 });
 
 export const deletePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
@@ -68,10 +84,9 @@ export const deletePost = asyncHandler(async (req: Request, res: Response, next:
 
 	await getRepository(Post).delete(+postId);
 
-	res.json({ message: 'Post is deleted successfully.' });
+	res.status(200).json({ message: 'Post is deleted successfully.' });
 });
 
-// /api/posts/:postId/like
 export const likePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
 
@@ -84,7 +99,6 @@ export const likePost = asyncHandler(async (req: Request, res: Response, next: N
 	let like;
 
 	if (existedLike) {
-		// update like
 		like = await getRepository(Like).save({
 			...existedLike,
 			is_like: true,
@@ -106,15 +120,12 @@ export const likePost = asyncHandler(async (req: Request, res: Response, next: N
 	}
 });
 
-// /api/posts/:postId/unlike
 export const unLikePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	// @ts-ignore
 	const { postId } = req.params;
 
 	const post = await getRepository(Post).findOne({ where: { id: +postId }, relations: ['likes', 'likes.user'] });
 
-	console.log(post);
-	// check post likes if they have a like user equal to current login user
 	// @ts-ignore
 	const existedLike = post?.likes.find(like => like.user.id === req.user.id);
 
