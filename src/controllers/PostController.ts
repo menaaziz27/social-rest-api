@@ -22,9 +22,18 @@ export const getPosts = asyncHandler(async (req: Request, res: Response, next: N
 	res.status(200).json(posts);
 });
 
+export const getPostById = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
+	const { postId } = req.params;
+
+	let post = await getRepository(Post).findOne({
+		where: { id: postId },
+		relations: ['comments', 'comments.user', 'likes', 'likes.user'],
+	});
+
+	res.status(200).json(post);
+});
+
 export const createPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-	// @ts-ignore
-	console.log(req.user.id);
 	const { title, content } = req.body;
 	let post = getRepository(Post).create({
 		// @ts-ignore
@@ -84,7 +93,6 @@ export const likePost = asyncHandler(async (req: Request, res: Response, next: N
 	let like;
 
 	if (existedLike) {
-		// update like
 		like = await getRepository(Like).save({
 			...existedLike,
 			is_like: true,
@@ -106,15 +114,12 @@ export const likePost = asyncHandler(async (req: Request, res: Response, next: N
 	}
 });
 
-// /api/posts/:postId/unlike
 export const unLikePost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	// @ts-ignore
 	const { postId } = req.params;
 
 	const post = await getRepository(Post).findOne({ where: { id: +postId }, relations: ['likes', 'likes.user'] });
 
-	console.log(post);
-	// check post likes if they have a like user equal to current login user
 	// @ts-ignore
 	const existedLike = post?.likes.find(like => like.user.id === req.user.id);
 

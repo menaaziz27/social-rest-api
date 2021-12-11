@@ -8,7 +8,6 @@ import { asyncHandler } from '../middlewares/asyncHandler';
 export const getPostComments = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
 
-	console.log({ postId });
 	const [comments, total] = await getRepository(Comment).findAndCount({
 		where: { post: +postId },
 		relations: ['user', 'post'],
@@ -24,9 +23,6 @@ export const getUserComments = asyncHandler(async (req: Request, res: Response, 
 	res.status(200).json(comments);
 });
 
-// !DANGER
-// endpoint to get all user comments in a specific post
-// /api/posts/:postId/comments?page=2&take=2
 export const getPostCommentsOfAUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
 
@@ -41,7 +37,6 @@ export const getPostCommentsOfAUser = asyncHandler(async (req: Request, res: Res
 	res.json(comments);
 });
 
-// /api/posts/:postId/comments
 export const createComment = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
 	const { text } = req.body;
@@ -90,7 +85,6 @@ export const editComment = asyncHandler(async (req: Request, res: Response, next
 	res.status(201).json(updatedComment);
 });
 
-// /api/comments/:commentId
 export const deleteComment = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId, commentId } = req.params;
 
@@ -100,7 +94,6 @@ export const deleteComment = asyncHandler(async (req: Request, res: Response, ne
 	});
 
 	const existingComment = post?.comments.find(comment => comment?.id === +commentId);
-	console.log({ existingComment });
 
 	if (!existingComment) {
 		res.status(400);
