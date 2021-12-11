@@ -5,9 +5,17 @@ import { asyncHandler } from '../middlewares/asyncHandler';
 import generateTokens from '../utils/generateTokens';
 import verifyToken from '../utils/verifyToken';
 const bcrypt = require('bcryptjs');
+const { validationResult } = require('express-validator');
 
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
 	const { name, email, password } = req.body;
+
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		res.status(400);
+		throw new Error(`${errors.array()[0].param}: ${errors.array()[0].msg}`);
+	}
+
 	const userExists = await User.findOne({ email });
 
 	if (userExists) {
@@ -24,9 +32,11 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 	const { email, password } = req.body;
-	if (!email || !password) {
+
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
 		res.status(400);
-		throw new Error('Please provide your credentials.');
+		throw new Error(`${errors.array()[0].param}: ${errors.array()[0].msg}`);
 	}
 
 	const user = await getRepository(User).findOne({ email });

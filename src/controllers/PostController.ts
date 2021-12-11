@@ -3,6 +3,7 @@ import { getRepository } from 'typeorm';
 import { Like } from '../entities/Like.entity';
 import { Post } from '../entities/Post.entity';
 import { asyncHandler } from '../middlewares/asyncHandler';
+const { validationResult } = require('express-validator');
 
 export const getMyPosts = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	let [posts, count] = await getRepository(Post)
@@ -35,6 +36,13 @@ export const getPostById = asyncHandler(async (req: Request, res: Response, next
 
 export const createPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { title, content } = req.body;
+
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		res.status(400);
+		throw new Error(`${errors.array()[0].param}: ${errors.array()[0].msg}`);
+	}
+
 	let post = getRepository(Post).create({
 		// @ts-ignore
 		user: req.user,
@@ -49,9 +57,10 @@ export const createPost = asyncHandler(async (req: Request, res: Response, next:
 export const editPost = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
 
-	if (!req.body.title && !req.body.content) {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
 		res.status(400);
-		throw new Error('Post should include title and content properties.');
+		throw new Error(`${errors.array()[0].param}: ${errors.array()[0].msg}`);
 	}
 
 	let post = await getRepository(Post).findOne({

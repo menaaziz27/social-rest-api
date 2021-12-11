@@ -1,10 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
+import { validationResult } from 'express-validator';
 import { getRepository } from 'typeorm';
 import { Comment } from '../entities/Comment.entity';
 import { Post } from '../entities/Post.entity';
 import { asyncHandler } from '../middlewares/asyncHandler';
 
-// /api/posts/:postId/comments
 export const getPostComments = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { postId } = req.params;
 
@@ -49,6 +49,12 @@ export const createComment = asyncHandler(async (req: Request, res: Response, ne
 	const { postId } = req.params;
 	const { text } = req.body;
 
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		res.status(400);
+		throw new Error(`${errors.array()[0].param}: ${errors.array()[0].msg}`);
+	}
+
 	let post = await getRepository(Post).findOne({ where: { id: +postId } });
 
 	if (!post) {
@@ -67,10 +73,15 @@ export const createComment = asyncHandler(async (req: Request, res: Response, ne
 	res.status(201).json({ comment: newComment });
 });
 
-// /api/comments/:commentId
 export const editComment = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { commentId } = req.params;
 	const { text } = req.body;
+
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		res.status(400);
+		throw new Error(`${errors.array()[0].param}: ${errors.array()[0].msg}`);
+	}
 
 	const comment = await getRepository(Comment).findOne({ where: { id: +commentId }, relations: ['user', 'post'] });
 
@@ -96,9 +107,6 @@ export const editComment = asyncHandler(async (req: Request, res: Response, next
 export const deleteComment = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { commentId } = req.params;
 
-	// get comment with user relation
-	// chech if
-
 	const comment = await getRepository(Comment).findOne({ where: { id: +commentId }, relations: ['user'] });
 
 	if (!comment) {
@@ -107,7 +115,6 @@ export const deleteComment = asyncHandler(async (req: Request, res: Response, ne
 	}
 	// @ts-ignore
 	if (comment?.user.id !== req.user.id) {
-		// if comment is not mine
 		res.status(400);
 		throw new Error('Not Authorized to perform this operation.');
 	}
