@@ -17,13 +17,25 @@ export const createUsers = asyncHandler(async (req: Request, res: Response, next
 
 export const deleteUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { userId } = req.params;
-
-	const deletedUser = await getRepository(User).softDelete({ id: +userId });
-	res.status(200).json(deletedUser);
+	// @ts-ignore
+	if (req.user.id === +userId) {
+		const deletedUser = await getRepository(User).softDelete({ id: +userId });
+		res.status(200).json(deletedUser);
+	} else {
+		res.status(400);
+		throw new Error('You are unauthorized to perform this task');
+	}
 });
 
 export const getDeletedUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
 	const { userId } = req.params;
-	const deletedUser = await getRepository(User).restore(userId);
-	res.status(200).json(deletedUser);
+
+	// @ts-ignore
+	if (req.user.id === +userId) {
+		const deletedUser = await getRepository(User).restore(userId);
+		res.status(200).json(deletedUser);
+	} else {
+		res.status(400);
+		throw new Error('You are unauthorized to perform this task');
+	}
 });
